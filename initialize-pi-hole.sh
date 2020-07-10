@@ -74,7 +74,7 @@ ip6tables -P FORWARD DROP
 netfilter-persistent save
 
 ################################################################################
-# Step 3: Install Pi-hole                                                      #
+# Step 3: Install and configure Pi-hole                                        #
 ################################################################################
 
 curl -sSL https://install.pi-hole.net | bash
