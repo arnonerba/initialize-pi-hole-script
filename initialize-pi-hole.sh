@@ -80,3 +80,9 @@ netfilter-persistent save
 curl -sSL https://install.pi-hole.net | bash
 
 pihole -a -i local
+
+################################################################################
+# Step 4: Restore default Ubuntu networking                                    #
+################################################################################
+
+apt -y purge dhcpcd5
