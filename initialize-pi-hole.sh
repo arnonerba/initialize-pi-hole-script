@@ -45,6 +45,16 @@ netfilter-persistent save
 
 read -p "Enter the name of your server's management interface: " MGMT_INT
 
+while true; do
+	read -p "Do you intend to run a DHCP server on this Pi-hole? [Y/n] " YN
+	case "$YN" in
+		[Yy])
+			DHCP=true; break ;;
+		[Nn])
+			DHCP=false; break ;;
+	esac
+done
+
 iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
@@ -53,15 +63,9 @@ iptables -A INPUT -i "$MGMT_INT" -p tcp -m multiport --dports 80 -m state --stat
 iptables -A INPUT -p udp -m multiport --dports 53 -m state --state NEW -j ACCEPT
 iptables -A INPUT -p tcp -m multiport --dports 53 -m state --state NEW -j ACCEPT
 
-while true; do
-	read -p "Do you intend to enable DHCP on the Pi-hole? [Y/n] " YN
-	case "$YN" in
-		[Yy])
-			iptables -A INPUT -p udp -m multiport --dports 67:68 -m state --state NEW -j ACCEPT; break ;;
-		[Nn])
-			break ;;
-	esac
-done
+if [ "$DHCP" == true ]; then
+	iptables -A INPUT -p udp -m multiport --dports 67:68 -m state --state NEW -j ACCEPT
+fi
 
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
@@ -85,4 +89,6 @@ pihole -a -i local
 # Step 4: Restore default Ubuntu networking                                    #
 ################################################################################
 
-apt -y purge dhcpcd5
+if [ ! "$DHCP" == true ]; then
+	apt -y purge dhcpcd5
+fi
